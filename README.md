@@ -1,4 +1,4 @@
-# 🖥️ HomeConnect — Smart Home Automation System (Frontend)
+# 🖥️ HomeConnect (Frontend)
 
 > 🏆 **University Academic Project | Next.js 14 + TypeScript + ShadCN UI | Modular Architecture**
 
@@ -9,10 +9,10 @@ A modern, responsive, and scalable frontend interface for the **HomeConnect Smar
 ## 🎓 Project Overview
 
 **Course**: Advanced Web Development / Software Engineering  
-**Institution**: [Your University Name]  
-**Submitted By**: [Your Full Name]  
-**Student ID**: [Your Student ID]  
-**Supervisor**: [Professor’s Name]
+**Institution**: European University of Bangladesh  
+**Submitted By**: Md.Shihab Uddin  
+**Student ID**: 220322055  
+**Supervisor**: Jannatun Ferdows
 
 > 💡 This project demonstrates mastery of:
 >
