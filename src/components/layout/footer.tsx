@@ -1,19 +1,23 @@
+
+import { pacifico } from '@/app/layout';
 import Link from 'next/link';
+import { FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi';
+import { LuLinkedin } from 'react-icons/lu';
 
 export default function Footer() {
   const homeConnectSocail = [
     {
-      name: "GitHub",
+      name: <FiTwitter />,
       href: ""
     }, {
-      name: "LinkedIn",
+      name: <LuLinkedin />,
       href: ""
     }, {
-      name: "Twitter",
+      name: <FiYoutube />,
       href: ""
     },
     {
-      name: "Facebook",
+      name: <FiInstagram />,
       href: ""
     }
   ]
@@ -47,18 +51,18 @@ export default function Footer() {
     },
   ];
   return (
-    <footer>
-      <div className='container mx-auto py-10'>
-        <div className='bg-black text-white p-6 rounded-3xl'>
+    <footer className='pt-10'>
+      <div className='container mx-auto'>
+        <div className='bg-black text-white rounded-t-3xl pt-10 px-10'>
           {/* Footer Brand Content */}
           <div className='flex gap-10'>
             <div className='max-w-4/12 flex flex-col gap-3'>
-              <Link href="/" className='text-4xl font-black'>HomeConnect</Link>
-              <p>A modern, responsive, and scalable frontend interface for the HomeConnect Smart Home System, built with Next.js App Router, TypeScript, and ShadCN UI</p>
-              <ul className='flex items-center gap-4'>
-                {homeConnectSocail.map((item) => (
-                  <li key={item.name}>
-                    <Link href={item.href} target="_blank" rel="noopener noreferrer">
+              <Link href="/" className={`${pacifico.className} text-4xl font-bold`}>HomeConnect</Link>
+              <p className='pt-2 text-gray-300'>A modern, responsive, and scalable frontend interface for the HomeConnect Smart Home System, built with Next.js App Router, TypeScript, and ShadCN UI</p>
+              <ul className='flex items-center gap-4 pt-5'>
+                {homeConnectSocail.map((item, index) => (
+                  <li key={index}>
+                    <Link href={item.href} target="_blank" rel="noopener noreferrer" className='text-2xl text-gray-300 hover:text-white transition'>
                       {item.name}
                     </Link>
                   </li>
@@ -72,7 +76,7 @@ export default function Footer() {
                   <ul className='flex flex-col gap-2'>
                     {widget.links.map((link) => (
                       <li key={link.name}>
-                        <Link href={link.href} className='hover:underline'>
+                        <Link href={link.href} className='text-gray-300 hover:underline'>
                           {link.name}
                         </Link>
                       </li>
@@ -82,9 +86,9 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          <div className='mt-6 border-t border-gray-700 pt-5'>
-            <div className='text-center text-sm text-gray-400'>
-              &copy; {new Date().getFullYear()} HomeConnect. All rights reserved.
+          <div className='mt-8 border-t border-gray-700 py-4'>
+            <div className='text-center text-sm text-gray-300'>
+              &copy;{new Date().getFullYear()} <span className={`${pacifico.className}`}>HomeConnect</span>. All rights reserved.
             </div>
           </div>
         </div>
