@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Bed, Briefcase, Building2, Home, Map } from "lucide-react";
 import Link from "next/link";
 
@@ -12,21 +11,29 @@ const types = [
 
 export default function PropertyTypeGrid() {
   return (
-    <section className="py-12">
+    <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h3 className="mb-6 text-2xl font-bold">Explore by property type</h3>
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Browse by Property Type</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Discover properties tailored to your specific needs and preferences
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
           {types.map(({ label, slug, Icon }) => (
-            <Link key={slug} href={`/search?type=${slug}`} className="group">
-              <Card className="flex items-center gap-3 rounded-xl p-4 transition-colors group-hover:border-primary">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
+            <Link
+              key={slug}
+              href={`/search?type=${slug}`}
+              className="group"
+            >
+              <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all duration-300 group-hover:shadow-md">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Icon className="w-6 h-6" />
                 </div>
-                <div>
-                  <p className="font-medium">{label}</p>
-                  <p className="text-xs text-muted-foreground">View {label.toLowerCase()}</p>
-                </div>
-              </Card>
+                <h3 className="font-semibold text-gray-900 mb-1">{label}</h3>
+                <p className="text-xs text-gray-500">View properties</p>
+              </div>
             </Link>
           ))}
         </div>

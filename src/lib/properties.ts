@@ -1,6 +1,8 @@
-import data from "@/data/properties.json";
+// src/lib/properties.ts
+import { propertiesApi } from './api/properties-api';
 
 export type ListingType = "rent" | "sale";
+
 export interface Property {
   id: string;
   title: string;
@@ -17,26 +19,11 @@ export interface Property {
   propertyType?: string;
   imageUrl: string;
   featured?: boolean;
-  createdAt: string; // ISO
+  createdAt: string;
   lat?: number;
   lng?: number;
   description?: string;
-}
-
-const PROPERTIES: Property[] = (data as Property[]).map((p) => ({
-  currency: "USD",
-  areaUnit: "sqft",
-  ...p,
-}));
-
-export function listProperties(): Property[] {
-  return [...PROPERTIES].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export function getPropertyById(id: string): Property | null {
-  return PROPERTIES.find((p) => p.id === id) ?? null;
+  isNew?: boolean;
 }
 
 export type QueryOpts = {
@@ -52,55 +39,63 @@ export type QueryOpts = {
   page?: number;
 };
 
-export function queryProperties(opts: QueryOpts = {}) {
-  const {
-    listingType,
-    featured,
-    city,
-    q,
-    minPrice,
-    maxPrice,
-    bedsMin = 0,
-    sort = "newest",
-    limit,
-    page = 1,
-  } = opts;
+const DEFAULT_NEW_DAYS = 30;
 
-  let items = listProperties();
+export function isNewListing(p: { createdAt: string }, days = DEFAULT_NEW_DAYS) {
+  const ageDays = (Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+  return ageDays <= days;
+}
 
-  if (listingType) items = items.filter((i) => i.listingType === listingType);
-  if (featured !== undefined) items = items.filter((i) => !!i.featured === !!featured);
-  if (city && city !== "all") items = items.filter((i) => i.city === city);
-  if (bedsMin > 0) items = items.filter((i) => i.beds >= bedsMin);
-  if (minPrice !== undefined) items = items.filter((i) => i.price >= minPrice);
-  if (maxPrice !== undefined) items = items.filter((i) => i.price <= maxPrice);
-  if (q && q.trim()) {
-    const text = q.trim().toLowerCase();
-    items = items.filter((i) =>
-      [i.title, i.city, i.neighborhood, i.propertyType]
-        .filter(Boolean)
-        .some((s) => s!.toLowerCase().includes(text))
-    );
+// Use API functions instead of local JSON
+export async function listProperties(): Promise<Property[]> {
+  const result = await propertiesApi.getProperties({ limit: 1000 }); // Get all properties
+  return result.items;
+}
+
+export async function getPropertyById(id: string): Promise<Property | null> {
+  return await propertiesApi.getPropertyById(id);
+}
+
+export async function queryProperties(opts: QueryOpts = {}) {
+  return await propertiesApi.getProperties(opts);
+}
+
+// Featured listings
+export async function getFeaturedProperties(limit?: number): Promise<Property[]> {
+  return await propertiesApi.getFeaturedProperties(limit);
+}
+
+// New listings
+export async function getNewListings(days = DEFAULT_NEW_DAYS, limit?: number): Promise<Property[]> {
+  const allProperties = await listProperties();
+  let items = allProperties.filter((p) => isNewListing(p, days));
+
+  if (typeof limit === "number") {
+    items = items.slice(0, limit);
   }
 
-  switch (sort) {
-    case "price-asc":
-      items = items.sort((a, b) => a.price - b.price);
-      break;
-    case "price-desc":
-      items = items.sort((a, b) => b.price - a.price);
-      break;
-    case "newest":
-    default:
-      items = items.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-  }
+  return items;
+}
 
-  const total = items.length;
-  if (limit && limit > 0) {
-    const start = (page - 1) * limit;
-    items = items.slice(start, start + limit);
-  }
-  return { items, total };
+// Map markers
+export async function getMapMarkers(type: ListingType | "all" = "all") {
+  const allProperties = await listProperties();
+
+  return allProperties
+    .filter((p) => (type === "all" ? true : p.listingType === type))
+    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      lat: p.lat as number,
+      lng: p.lng as number,
+      price: p.price,
+      currency: p.currency ?? "USD",
+      listingType: p.listingType,
+    }));
+}
+
+// Get available filters
+export async function getAvailableFilters() {
+  return await propertiesApi.getFilters();
 }

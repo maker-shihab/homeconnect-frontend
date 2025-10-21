@@ -1,33 +1,19 @@
-import "leaflet/dist/leaflet.css";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Nunito_Sans, Pacifico } from "next/font/google";
-import "./globals.css";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import { AuthProvider } from "@/lib/auth-context";
+import { nunitoSans } from "@/lib/fonts";
+import "leaflet/dist/leaflet.css";
+import { Metadata } from "next";
+import { Toaster } from "sonner";
+import "./globals.css";
+import ReactQueryProvider from "./providers";
+
 
 export const metadata: Metadata = {
   title: "Home Connect",
   description: "Real estate and rent management",
 };
 
-const nunitoSans = Nunito_Sans({
-  subsets: ['latin'],
-  variable: '--font-nunito-sans',
-  display: 'swap',
-});
-
-export const pacifico = Pacifico({
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
 
 export default function RootLayout({
   children,
@@ -37,9 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`$ ${nunitoSans.className} ${geistSans.variable} ${geistMono.variable} antialiased relative z-10`}
+        className={`$ ${nunitoSans.className} antialiased relative z-10`}
       >
-        {children}
+        <ReactQueryProvider>
+          <AuthProvider>
+            <LayoutWrapper>{children}</LayoutWrapper>
+            <Toaster richColors position="top-right" closeButton />
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

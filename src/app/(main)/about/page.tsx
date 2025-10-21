@@ -25,7 +25,7 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
+    <div className="mx-auto max-w-6xl p-4 md:p-6 mt-24">
       {/* Hero */}
       <div className="mb-8 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -224,12 +224,12 @@ export default function AboutPage() {
             <div>
               <div className="mb-1 font-medium">Project Repository</div>
               <Link
-                href="https://github.com/your-username/homeconnect"
+                href="https://github.com/maker-shihab/homeconnect-frontend"
                 target="_blank"
                 className="inline-flex items-center gap-2 text-sm text-primary underline"
               >
                 <Github className="h-4 w-4" />
-                github.com/your-username/homeconnect
+                github.com/maker-shihab/homeconnect-frontend
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
                 Replace with your actual repo link. Includes setup instructions and notes.
@@ -239,7 +239,7 @@ export default function AboutPage() {
               <div className="mb-1 font-medium">Get in touch</div>
               <Link href="mailto:youremail@example.com" className="inline-flex items-center gap-2 text-sm text-primary underline">
                 <Mail className="h-4 w-4" />
-                youremail@example.com
+                shihabud696@gmail.com
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
                 Questions, feedback, or collaboration ideas are welcome.

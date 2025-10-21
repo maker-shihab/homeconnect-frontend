@@ -1,0 +1,23 @@
+[
+  { "name": "Home", "href": "/" },
+
+  { "name": "Map", "href": "/map" },
+  {
+    "name": "Explore",
+    "children": [
+      { "name": "Featured", "href": "/featured" },
+      { "name": "New Listings", "href": "/new" }
+    ]
+  },
+  {
+    "name": "Services",
+    "children": [
+      { "name": "Property Management", "href": "/services/property-management" },
+      { "name": "Tenant Screening", "href": "/services/tenant-screening" },
+      { "name": "Maintenance", "href": "/services/maintenance" },
+      { "name": "Payments & Accounting", "href": "/services/payments" }
+    ]
+  },
+  { "name": "About", "href": "/about" },
+  { "name": "Contact", "href": "/contact" }
+]
