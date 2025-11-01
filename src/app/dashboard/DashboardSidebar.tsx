@@ -1,8 +1,10 @@
 'use client';
 
+import { pacifico } from '@/lib/fonts';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { TbHomeSearch } from 'react-icons/tb';
 
 interface DashboardSidebarProps {
   isOpen: boolean;
@@ -41,9 +43,15 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
         <div className="flex items-center justify-between h-20 p-6 border-b border-gray-200">
           <Link
             href="/"
-            className="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className={`${pacifico.className} text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg hover:drop-shadow-xl inline-flex items-center space-x-3 hover:scale-105 transition-transform duration-300`}
           >
-            HomeConnect
+            <div className="relative">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-200/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                <span className="text-xl text-blue-600 lg:text-2xl"><TbHomeSearch /></span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+            <span className="none md:block">HomeConnect</span>
           </Link>
           <button
             onClick={onClose}

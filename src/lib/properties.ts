@@ -1,5 +1,5 @@
 // src/lib/properties.ts
-import { propertiesApi } from './api/properties-api';
+import { propertiesApi, PropertyResponse } from './api/properties-api';
 
 export type ListingType = "rent" | "sale";
 
@@ -47,13 +47,13 @@ export function isNewListing(p: { createdAt: string }, days = DEFAULT_NEW_DAYS) 
 }
 
 // Use API functions instead of local JSON
-export async function listProperties(): Promise<Property[]> {
-  const result = await propertiesApi.getProperties({ limit: 1000 }); // Get all properties
-  return result.items;
-}
+// export async function listProperties(): Promise<PropertyResponse[]> {
+//   const result = await propertiesApi.getProperties({ limit: 1000 }); // Get all properties
+//   return result;
+// }
 
-export async function getPropertyById(id: string): Promise<Property | null> {
-  return await propertiesApi.getPropertyById(id);
+export async function getPropertyById(id: string): Promise<PropertyResponse | null> {
+  return await propertiesApi.getProperty(id);
 }
 
 export async function queryProperties(opts: QueryOpts = {}) {
@@ -61,41 +61,41 @@ export async function queryProperties(opts: QueryOpts = {}) {
 }
 
 // Featured listings
-export async function getFeaturedProperties(limit?: number): Promise<Property[]> {
+export async function getFeaturedProperties(limit?: number): Promise<PropertyResponse[]> {
   return await propertiesApi.getFeaturedProperties(limit);
 }
 
 // New listings
-export async function getNewListings(days = DEFAULT_NEW_DAYS, limit?: number): Promise<Property[]> {
-  const allProperties = await listProperties();
-  let items = allProperties.filter((p) => isNewListing(p, days));
+// export async function getNewListings(days = DEFAULT_NEW_DAYS, limit?: number): Promise<PropertyResponse[]> {
+//   const allProperties = await listProperties();
+//   let items = allProperties.filter((p) => isNewListing(p, days));
 
-  if (typeof limit === "number") {
-    items = items.slice(0, limit);
-  }
+//   if (typeof limit === "number") {
+//     items = items.slice(0, limit);
+//   }
 
-  return items;
-}
+//   return items;
+// }
 
 // Map markers
-export async function getMapMarkers(type: ListingType | "all" = "all") {
-  const allProperties = await listProperties();
+// export async function getMapMarkers(type: ListingType | "all" = "all") {
+//   const allProperties = await listProperties();
 
-  return allProperties
-    .filter((p) => (type === "all" ? true : p.listingType === type))
-    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
-    .map((p) => ({
-      id: p.id,
-      title: p.title,
-      lat: p.lat as number,
-      lng: p.lng as number,
-      price: p.price,
-      currency: p.currency ?? "USD",
-      listingType: p.listingType,
-    }));
-}
+//   return allProperties
+//     .filter((p) => (type === "all" ? true : p.listingType === type))
+//     .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+//     .map((p) => ({
+//       id: p.id,
+//       title: p.title,
+//       lat: p.lat as number,
+//       lng: p.lng as number,
+//       price: p.price,
+//       currency: p.currency ?? "USD",
+//       listingType: p.listingType,
+//     }));
+// }
 
 // Get available filters
 export async function getAvailableFilters() {
-  return await propertiesApi.getFilters();
+  return await propertiesApi.getAvailableFilters();
 }

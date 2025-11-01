@@ -4,7 +4,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { propertiesApi, PropertyFilters, PropertyResponse } from "@/lib/api/properties-api";
-import { Bath, Bed, MapPin, Ruler, ShieldCheck } from "lucide-react";
+import { Bath, Bed, MapPin, Ruler, ShieldCheck, ShieldOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from 'react';
@@ -23,6 +23,8 @@ export interface PropertiesGridProps {
   city?: string;
   page?: number;
   autoFetch?: boolean;
+  rentPrice?: number;
+  currency?: string;
 }
 
 function formatPrice(price: number, currency = "BDT", listingType: ListingType) {
@@ -46,7 +48,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
     title,
     city,
     neighborhood,
-    price,
+    rentPrice,
     currency = "BDT",
     listingType,
     bedrooms,
@@ -66,12 +68,12 @@ export function PropertyCard({ property }: PropertyCardProps) {
     return createdDate > sevenDaysAgo;
   })();
 
-  const priceLabel = formatPrice(price, currency, listingType);
+  const convertRentPrise = Number(rentPrice);
+  const priceLabel = formatPrice(convertRentPrise, currency, listingType);
   const imageUrl = images?.[0] || '/placeholder-property.jpg';
-
   return (
     <Link
-      href={`/property/${id}`}
+      href={`/properties/${id}`}
       className="group block focus:outline-none"
       aria-label={`${title} in ${neighborhood ? `${neighborhood}, ` : ""}${city}`}
     >
@@ -82,7 +84,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           shadow-sm transition-all
           hover:-translate-y-0.5 hover:shadow-xl
           ring-1 ring-black/5 dark:ring-white/10
-          focus-within:ring-2 focus-within:ring-primary/50
+          focus-within:ring-2 focus-within:ring-primary/50 pt-0
         "
       >
         <div
@@ -128,9 +130,15 @@ export function PropertyCard({ property }: PropertyCardProps) {
           <div className="mb-1 flex items-center justify-between">
             <div className="text-base font-semibold">{priceLabel}</div>
 
-            {isVerified && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 bg-gradient-to-b from-emerald-500/15 to-emerald-500/5 ring-1 ring-emerald-500/25 shadow-sm supports-[backdrop-filter]:backdrop-blur-sm transition-colors group-hover:bg-emerald-500/20 group-hover:ring-emerald-500/35" title="Verified listing">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> Verified
+            {isVerified ? (
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-100/80 border border-emerald-200" title="Verified listing">
+                <ShieldCheck className="h-3 w-3 text-emerald-600" aria-hidden="true" />
+                Verified
+              </span>
+            ) : (
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-red-700 bg-red-100/80 border border-red-200" title="Not verified">
+                <ShieldOff className="h-3 w-3 text-red-600" aria-hidden="true" />
+                Not Verified
               </span>
             )}
           </div>

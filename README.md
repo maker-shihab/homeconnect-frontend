@@ -1,224 +1,105 @@
-# 🖥️ HomeConnect (Frontend)
+# 🖥️ HomeConnect - Frontend
 
-> 🏆 **University Academic Project | Next.js 14 + TypeScript + ShadCN UI | Modular Architecture**
+Project Link
 
-A modern, responsive, and scalable frontend interface for the **HomeConnect Smart Home System**, built with Next.js App Router, TypeScript, and ShadCN UI — designed to integrate seamlessly with the Express.js backend. Perfectly structured for academic evaluation, team collaboration, and future portfolio 展示.
+Live Demo: [Pending]
 
----
+Backend Repository: https://github.com/maker-shihab/homeconnect-backend
 
-## 🎓 Project Overview
+HomeConnect is a performant and aesthetically modern web application designed for the real estate and property management market. It provides a seamless experience for property owners to list and manage their properties, and for renters to find, apply for, and manage rental agreements. Built with the Next.js framework, the frontend is optimized for speed, SEO, and developer experience.
 
-**Course**: Advanced Web Development / Software Engineering  
-**Institution**: European University of Bangladesh  
-**Submitted By**: Md.Shihab Uddin  
-**Student ID**: 220322055  
-**Supervisor**: Jannatun Ferdows
+## ✨ Key Features
 
-> 💡 This project demonstrates mastery of:
->
-> - Modern React architecture with Next.js App Router
-> - TypeScript strict typing & component design
-> - ShadCN UI + Tailwind CSS for professional styling
-> - JWT Authentication Flow & Protected Routes
-> - React Query for efficient data fetching & caching
-> - Modular, feature-based folder structure mirroring backend
-> - Responsive UI Design & Accessibility (a11y)
-> - Environment-based API configuration
+This application focuses on user experience and accessibility, providing a rich set of features:
 
----
+- ⚡️ Performance & SEO: Utilizes Next.js features like Server-Side Rendering (SSR) and Static Site Generation (SSG) for fast initial loads and optimal search engine visibility.
+- 🗺 Interactive Property Map: Integrates react-leaflet to display property locations on an interactive map, allowing users to browse listings geographically.
+- 🎨 Accessible & Composable UI: Built using Radix UI primitives to ensure all interface components are highly accessible (WCAG compliant) and fully customizable.
+- ✍️ Robust Form Handling: Implements react-hook-form with schema validation (e.g., Zod) for efficient, controlled, and error-proof form submissions across authentication, property listings, and rent payments.
+- 🔍 Advanced Filtering & Search: Intuitive search interface to filter properties by location, price, type, and rental status.
+- 📱 Fully Responsive Design: Fluid layout implemented using Tailwind CSS for optimal viewing and interaction on all device sizes (desktop, tablet, and mobile).
+- 👤 Role-Based UI: Dynamically displays features and navigation links based on user roles (e.g., owner dashboards vs. renter dashboards).
 
-## 🌐 Live Demo (Optional)
+## 🛠 Tech Stack
 
-🔗 **Frontend**: `http://localhost:3000`  
-🔗 **Backend API**: `http://localhost:5000/api/v1`  
-🔗 **Swagger Docs**: `http://localhost:5000/api-docs`
+The frontend is a testament to modern web development best practices, emphasizing speed, modularity, and type safety.
 
-> 🖼️ _(Add deployed URL before final submission — e.g., Vercel/Netlify)_
+| Category | Technology       | Purpose                       |
+| :-------- | :--------- | :-------------------------------- |
+| Framework  | Next.js | Production-ready React framework with powerful rendering features. |
+| Core Library | React | Core library for building UI components. |
+| Styling & UI           | Radix UI | Accessible, unstyled component primitives for custom UI.|
+| Styling Utility | Tailwind CSS | Utility-first CSS framework for rapid, customizable design.|
+| Forms | react-hook-form | High-performance form validation and state management. | Mapping | react-leaflet | Declarative mapping library for interactive maps. | Icons | react-icons | Comprehensive icon library for UI elements. | State Management | (Implied) | Context API or Zustand/Redux for global state (Auth, notifications). | 
 
----
+## 🚀 Getting Started
 
-## 🧩 Features
-
-✅ **User Authentication** — Login, Register, Forgot Password  
-✅ **Smart Device Dashboard** — View, Control, Add Devices (Lights, Plugs, ACs)  
-✅ **Rental Marketplace** — Browse, Post, Book Rental Items  
-✅ **Payment Simulation** — Checkout Flow with Success Screen  
-✅ **User Dashboard** — Manage Devices, Rentals, Profile  
-✅ **Responsive Design** — Mobile, Tablet, Desktop Ready  
-✅ **Protected Routes** — Role-based access control  
-✅ **Loading States & Error Boundaries** — Professional UX  
-✅ **Dark Mode Support** — (Optional — easy to add with ShadCN)  
-✅ **API Integration** — Axios + React Query + Centralized Client
-
----
-
-## 🚀 Tech Stack
-
-| Layer            | Technology                           |
-| ---------------- | ------------------------------------ |
-| Framework        | Next.js 14 (App Router)              |
-| Language         | TypeScript (Strict Mode)             |
-| Styling          | Tailwind CSS + ShadCN UI Components  |
-| State Management | React Query + Zustand (Optional)     |
-| Form Handling    | React Hook Form + Zod Validation     |
-| Routing          | Next.js App Router                   |
-| HTTP Client      | Axios                                |
-| Auth             | JWT (Stored in localStorage)         |
-| Icons            | Lucide Icons / Heroicons             |
-| Code Quality     | ESLint + Prettier + Husky            |
-| Responsive       | Mobile-first, Flex/Grid, Breakpoints |
-
----
-
-## 📂 Architecture Diagram (Conceptual)
-
-```bash
-src/
-├── app/ → Pages & Layouts (Next.js App Router)
-│ ├── auth/ → Login, Register, Forgot Password
-│ ├── devices/ → Device List, Detail, Add
-│ ├── rentals/ → Browse, Post, Book
-│ └── dashboard/ → User Analytics & Controls
-│
-├── components/ → Reusable UI
-│ ├── ui/ → ShadCN Base Components (Button, Card, etc.)
-│ ├── modules/ → Feature-specific Components (DeviceCard, RentalForm)
-│ └── shared/ → Loading, ErrorBoundary, ProtectedRoute
-│
-├── hooks/ → Custom Hooks (useAuth, useDevices, useApi)
-├── lib/ → API Client, Utils, Constants
-├── types/ → Shared TypeScript Interfaces (matches backend!)
-└── stores/ → Zustand Stores (optional for global state)
-```
-
-> 🖼️ _(Add actual diagram image later — e.g., draw.io or Mermaid)_
-
----
-
-## ⚙️ Getting Started
+Follow these instructions to set up the project locally.
 
 ### Prerequisites
-
-- Node.js v18+
-- npm / yarn / pnpm
-- Running backend at `http://localhost:5000`
+- Node.js (v18+)
+- npm or yarn
 
 ### Installation
 
-```bash
-git clone https://github.com/yourusername/homeconnect-frontend.git
+###1. Clone the Repository:
+
+```bash 
+git clone [https://github.com/maker-shihab/homeconnect-frontend.git](https://github.com/maker-shihab/homeconnect-frontend.git)
 cd homeconnect-frontend
+```
+
+### 2. Install Dependencies:
+
+```bash 
 npm install
-cp .env.example .env.local
+# or
+yarn install
+```
+### 3. Environment Variables:
+Create a file named `.env.local` in the root directory and add the following variable, pointing to your running backend API (e.g., the `homeconnect-backend` repository):
+
+```bash
+# The URL where your backend Express server is running
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000/api/v1
+```
+
+### 4.Run the Development Server:
+
+```bash
 npm run dev
+# or
+yarn dev
 ```
+The application will now be running on `http://localhost:3000.`
 
-## Environment Variables (.env.local)
+## 📂 Folder Structure
+
+The project structure adheres to Next.js conventions for maximum scalability and clarity:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
-NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_STRIPE_KEY= # optional
+├── public/                # Static assets (images, favicon)
+├── src/
+│   ├── app/               # Next.js App Router (pages/routes)
+│   │   ├── (auth)/        # Route groups for authentication
+│   │   ├── properties/    # Property listing and detail pages
+│   │   └── rentals/       # Rent management pages
+│   ├── components/        # Reusable UI components (buttons, cards, inputs)
+│   │   ├── ui/            # Radix UI wrapper components
+│   │   └── layout/        # Navigation, Header, Footer
+│   ├── hooks/             # Custom React Hooks (e.g., useAuth, useFetch)
+│   ├── services/          # API communication logic (e.g., axios instances)
+│   ├── styles/            # Global styles and Tailwind config
+│   └── utils/             # Utility functions (date formatting, currency)
+└── package.json
 ```
 
-## Scripts
 
-```bash
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run start     # Start production build
-npm run lint      # Check code quality
-npm run format    # Format with Prettier
-```
+## 🤝 Contact
 
-## 📖 Component Design Philosophy
+This project was developed by Shihab, a freelance web application and MERN Stack Developer.
 
-We use ShadCN UI — a collection of re-usable components built using Radix UI and Tailwind CSS.
+- Portfolio/Contact: [Insert Your Portfolio/LinkedIn Link Here]
+- GitHub: https://github.com/maker-shihab
 
-**✅ Why ShadCN?**
-
-- No external dependencies — components live in your codebase
-- Fully customizable via Tailwind classes
-- Accessible by default (a11y compliant)
-- Perfect for academic projects — shows deepunderstanding of component architecture
-  Example usage:
-
-```js
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-
-export default function HomePage() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome to HomeConnect</CardTitle>
-      </CardHeader>
-      <Button variant="primary">Get Started</Button>
-    </Card>
-  );
-}
-```
-
-## 🔗 Backend Integration
-
-All API calls are made through `src/lib/api/client.ts` → which injects JWT token automatically.
-
-```ts
-// src/hooks/useDevices.ts
-const { data, isLoading } = useQuery({
-  queryKey: ["devices"],
-  queryFn: () => apiClient.get("/devices").then((res) => res.data.data),
-});
-```
-
-## 🧪 Testing Strategy (Future Scope)
-
-Unit & Integration tests can be added using:
-
-- Jest + React Testing Library
-- Cypress / Playwright for E2E
-- Mock Service Worker (MSW) for API mocking
-
-## 🤝 Contribution Guidelines
-
-This is an academic project — but structured for open collaboration:
-
-1. Fork the repo
-2. Create feature branch (git checkout -b feature/module-name)
-3. Commit changes (git commit -m 'feat: add device control panel')
-4. Push to branch (git push origin feature/module-name)
-5. Open Pull Request
-
-## 📸 Screenshots (Placeholder)
-
-🖼️ Add screenshots of:
-
-> Login Page
-> Device Dashboard
-> Rental Listing
-> Payment Flow
-> Mobile Responsiveness
-> Swagger API Docs Integration
-> (Drag & drop images into /public/images/screenshots/ and link here)
-
-## 📚 References & Credits
-
-- Next.js Documentation
-- TypeScript Handbook
-- ShadCN UI Docs
-- Tailwind CSS Guide
-- React Query Documentation
-- “Clean Code” by Robert C. Martin
-- University Course Materials
-
-## 📄 License
-
-MIT License — For academic use and portfolio 展示 only.
-
-## 🙋‍♂️ Contact
-
-- Developer: MD. Shihab Uddin
-- Email: shihabud696@gmail.com
-- LinkedIn: linkedin.com/in/maker-shiahb
-- GitHub: github.com/makershihab
-- Portfolio: [Let's Checkout Protfolios](https://makershihab.netlify.app/)
+I specialize in building modern, high-performing web solutions that combine clean design with efficient backend logic.

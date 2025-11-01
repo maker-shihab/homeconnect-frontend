@@ -41,28 +41,35 @@ export interface PropertyResponse {
   description: string;
   listingType: 'rent' | 'sale';
   propertyType: string;
-  price: number;
-  currency: string;
-  securityDeposit?: number;
   address: string;
+  rentPrice?: number;
+  salePrice?: number;
+  currency?: string;
+  securityDeposit?: number;
+  isAvailable?: boolean;
   city: string;
   neighborhood: string;
+  state: string;
+  country: string;
   latitude: number;
   longitude: number;
+  zipCode?: string;
   bedrooms: number;
   bathrooms: number;
   areaSize: number;
   areaUnit: string;
-  floor?: number;
-  totalFloors?: number;
   yearBuilt?: number;
+  lotSize?: number;
+  lotUnit?: string;
   amenities: string[];
   images: string[];
   videos?: string[];
-  rules: string[];
-  availableFrom: string;
-  isAvailable: boolean;
-  minimumStay: number;
+  virtualTour?: string;
+  floorPlans?: string[];
+  status: string;
+  featured: boolean;
+  isVerified: boolean;
+  tags: string[];
   owner: {
     id: string;
     name: string;
@@ -70,9 +77,14 @@ export interface PropertyResponse {
     phone?: string;
     avatar?: string;
   };
-  status: string;
-  featured: boolean;
-  isVerified: boolean;
+  agent?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    avatar?: string;
+    company?: string;
+  };
   views: number;
   likes: string[];
   createdAt: string;
@@ -188,6 +200,12 @@ export interface LikeResponse {
 }
 
 export const propertiesApi = {
+  getAllProperties: async (): Promise<PropertyResponse[]> => {
+    const response = await api.get('/properties');
+    console.log(response);
+    return response.data.data;
+  },
+
   // Get all properties with filters
   getProperties: async (filters: PropertyFilters = {}): Promise<PropertySearchResult> => {
     const response = await api.get('/properties', { params: filters });
