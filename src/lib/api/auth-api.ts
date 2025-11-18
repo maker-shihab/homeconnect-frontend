@@ -1,11 +1,11 @@
-import { User } from '@/redux/features/auth/authSlice';
-import { api } from './api';
+import type { AuthUser } from "@/redux/features/auth/authSlice";
+import { api } from "./api";
 
 export interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role: 'tenant' | 'landlord';
+  role: "tenant" | "landlord";
   phone?: string;
   avatar?: string;
 }
@@ -42,41 +42,49 @@ export interface IUpdateProfileRequest {
 
 export const authApi = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', data);
+    const response = await api.post("/auth/register", data);
     return response.data.data;
   },
 
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', data);
+    const response = await api.post("/auth/login", data);
     return response.data.data;
   },
 
-  updateProfile: async (data: IUpdateProfileRequest): Promise<User> => {
-    const response = await api.patch('/auth/profile', data);
+  updateProfile: async (data: IUpdateProfileRequest): Promise<AuthUser> => {
+    const response = await api.patch("/auth/profile", data);
     return response.data.data;
   },
 
   verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/verify-email', { token });
+    const response = await api.post("/auth/verify-email", { token });
     return response.data;
   },
 
   forgotPassword: async (email: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/forgot-password', { email });
+    const response = await api.post("/auth/forgot-password", { email });
     return response.data;
   },
 
-  resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/reset-password', { token, password });
+  resetPassword: async (
+    token: string,
+    password: string
+  ): Promise<{ message: string }> => {
+    const response = await api.post("/auth/reset-password", {
+      token,
+      password,
+    });
     return response.data;
   },
 
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await api.post('/auth/refresh-token', { refreshToken });
+    const response = await api.post("/auth/refresh-token", { refreshToken });
     return response.data.data;
   },
-  changePassword: async (data: IChangePasswordRequest): Promise<{ message: string }> => {
-    const response = await api.post('/auth/change-password', data);
+  changePassword: async (
+    data: IChangePasswordRequest
+  ): Promise<{ message: string }> => {
+    const response = await api.post("/auth/change-password", data);
     return response.data; // Shudhu success message
   },
 
@@ -84,13 +92,13 @@ export const authApi = {
    * @description (Bonus) User nijer account delete korbe
    */
   deleteAccount: async (): Promise<{ message: string }> => {
-    const response = await api.delete('/users/me/delete-account');
+    const response = await api.delete("/users/me/delete-account");
     return response.data;
   },
 
   // ✅ Add logout function
   logout: async (): Promise<{ message: string }> => {
-    const response = await api.post('/auth/logout');
+    const response = await api.post("/auth/logout");
     return response.data;
   },
 };
