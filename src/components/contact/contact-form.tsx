@@ -29,19 +29,32 @@ import { Textarea } from "@/components/ui/textarea";
 
 const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
 
+const inquiryTypes = [
+  "rent",
+  "buy",
+  "sell",
+  "landlord",
+  "support",
+  "partnership",
+  "other",
+] as const;
+
 const FormSchema = z.object({
   fullName: z.string().min(2, "Please enter your full name"),
   email: z.string().email("Enter a valid email"),
-  phone: z.string().optional().refine((v) => !v || phoneRegex.test(v), {
-    message: "Enter a valid phone number",
-  }),
-  type: z.enum(["rent", "buy", "sell", "landlord", "support", "partnership", "other"], {
-    required_error: "Please select an inquiry type",
+  phone: z
+    .string()
+    .optional()
+    .refine((v) => !v || phoneRegex.test(v), {
+      message: "Enter a valid phone number",
+    }),
+  type: z.enum(inquiryTypes, {
+    message: "Please select an inquiry type",
   }),
   propertyId: z.string().optional(),
   message: z.string().min(10, "Tell us a bit more (min 10 characters)"),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "Please accept the privacy policy" }),
+  consent: z.boolean().refine((value) => value === true, {
+    message: "Please accept the privacy policy",
   }),
   // Honeypot anti-spam
   company: z.string().max(0).optional(),
@@ -89,22 +102,39 @@ export function ContactForm({ prefill }: Props) {
           propertyId: values.propertyId || undefined,
           message: values.message,
           source: "homeconnect-web",
-          pathname: typeof window !== "undefined" ? window.location.pathname : undefined,
+          pathname:
+            typeof window !== "undefined"
+              ? window.location.pathname
+              : undefined,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "Something went wrong");
+        type ContactErrorResponse = { error?: string; message?: string };
+        const data = (await res
+          .json()
+          .catch(() => null)) as ContactErrorResponse | null;
+        const errorMessage =
+          data?.error || data?.message || "Something went wrong";
+        throw new Error(errorMessage);
       }
 
       form.reset({ ...form.getValues(), message: "", consent: false });
       toast.success("Message sent", {
         description: "Our team will get back to you within 1 business day.",
       });
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const description =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" &&
+            error !== null &&
+            "message" in error &&
+            typeof (error as { message?: unknown }).message === "string"
+          ? (error as { message: string }).message
+          : "Please try again later.";
       toast.error("Could not send", {
-        description: err?.message || "Please try again later.",
+        description,
       });
     } finally {
       setSubmitting(false);
@@ -146,7 +176,12 @@ export function ContactForm({ prefill }: Props) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" inputMode="email" placeholder="jane@company.com" {...field} />
+                  <Input
+                    type="email"
+                    inputMode="email"
+                    placeholder="jane@company.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -162,7 +197,12 @@ export function ContactForm({ prefill }: Props) {
               <FormItem>
                 <FormLabel>Phone (optional)</FormLabel>
                 <FormControl>
-                  <Input type="tel" inputMode="tel" placeholder="+1 415 555 0199" {...field} />
+                  <Input
+                    type="tel"
+                    inputMode="tel"
+                    placeholder="+1 415 555 0199"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription>We’ll call only if needed.</FormDescription>
                 <FormMessage />
@@ -176,7 +216,10 @@ export function ContactForm({ prefill }: Props) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Inquiry type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a type" />
@@ -207,7 +250,9 @@ export function ContactForm({ prefill }: Props) {
               <FormControl>
                 <Input placeholder="e.g., HC-102" {...field} />
               </FormControl>
-              <FormDescription>Include if your message is about a specific listing.</FormDescription>
+              <FormDescription>
+                Include if your message is about a specific listing.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -220,7 +265,11 @@ export function ContactForm({ prefill }: Props) {
             <FormItem>
               <FormLabel>How can we help?</FormLabel>
               <FormControl>
-                <Textarea placeholder="Share details about your inquiry..." className="min-h-[120px]" {...field} />
+                <Textarea
+                  placeholder="Share details about your inquiry..."
+                  className="min-h-[120px]"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -243,7 +292,10 @@ export function ContactForm({ prefill }: Props) {
               </FormControl>
               <div className="text-sm text-muted-foreground">
                 I agree to the HomeConnect{" "}
-                <a href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+                <a
+                  href="/privacy"
+                  className="underline underline-offset-4 hover:text-foreground"
+                >
                   Privacy Policy
                 </a>
                 .
