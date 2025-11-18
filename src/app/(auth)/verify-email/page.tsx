@@ -51,7 +51,7 @@ export default function VerifyEmailPage() {
               Please check your inbox and click the verification link to activate your account.
             </p>
             <Button asChild>
-              <Link href="/signin">Go to Login</Link>
+              <Link href="/login">Go to Login</Link>
             </Button>
           </CardContent>
         </Card>
@@ -77,7 +77,7 @@ export default function VerifyEmailPage() {
               <div className="text-6xl text-green-500">✅</div>
               <p className="text-green-600 font-medium">{message}</p>
               <Button asChild>
-                <Link href="/signin">Go to Login</Link>
+                <Link href="/login">Go to Login</Link>
               </Button>
             </>
           )}

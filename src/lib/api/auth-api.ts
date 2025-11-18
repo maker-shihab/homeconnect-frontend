@@ -1,3 +1,4 @@
+import { User } from '@/redux/features/auth/authSlice';
 import { api } from './api';
 
 export interface RegisterData {
@@ -28,6 +29,17 @@ export interface AuthResponse {
   refreshToken?: string;
 }
 
+interface IChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface IUpdateProfileRequest {
+  name?: string;
+  phone?: string;
+  avatar?: string;
+}
+
 export const authApi = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
     const response = await api.post('/auth/register', data);
@@ -36,6 +48,11 @@ export const authApi = {
 
   login: async (data: LoginData): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', data);
+    return response.data.data;
+  },
+
+  updateProfile: async (data: IUpdateProfileRequest): Promise<User> => {
+    const response = await api.patch('/auth/profile', data);
     return response.data.data;
   },
 
@@ -57,6 +74,18 @@ export const authApi = {
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
     const response = await api.post('/auth/refresh-token', { refreshToken });
     return response.data.data;
+  },
+  changePassword: async (data: IChangePasswordRequest): Promise<{ message: string }> => {
+    const response = await api.post('/auth/change-password', data);
+    return response.data; // Shudhu success message
+  },
+
+  /**
+   * @description (Bonus) User nijer account delete korbe
+   */
+  deleteAccount: async (): Promise<{ message: string }> => {
+    const response = await api.delete('/users/me/delete-account');
+    return response.data;
   },
 
   // ✅ Add logout function

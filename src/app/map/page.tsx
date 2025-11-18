@@ -2,33 +2,12 @@
 "use client";
 
 import { listProperties } from "@/lib/properties";
+import type { PropertyResponse } from "@/types/property.types";
 import { useEffect, useState } from "react";
 import MapSearchClient from "./MapSearchClient";
 
-type MapItem = {
-  id: string;
-  title: string;
-  city: string;
-  neighborhood?: string;
-  price: number;
-  currency?: string;
-  listingType: "rent" | "sale";
-  beds: number;
-  baths: number;
-  areaSize: number;
-  areaUnit?: string;
-  propertyType?: string;
-  imageUrl: string;
-  featured?: boolean;
-  createdAt: string;
-  lat: number;
-  lng: number;
-  description?: string;
-  isNew?: boolean;
-};
-
 export default function MapPage() {
-  const [mapItems, setMapItems] = useState<MapItem[]>([]);
+  const [mapItems, setMapItems] = useState<PropertyResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +15,12 @@ export default function MapPage() {
     async function loadProperties() {
       try {
         setIsLoading(true);
-        const items = await listProperties();
-        const itemsWithCoords = items.filter(p => p.lat && p.lng);
+        const items = await listProperties({ limit: 100 });
+        const itemsWithCoords = items.filter(
+          (property) =>
+            typeof property.latitude === "number" &&
+            typeof property.longitude === "number"
+        );
         setMapItems(itemsWithCoords);
       } catch (err) {
         setError("Failed to load properties");

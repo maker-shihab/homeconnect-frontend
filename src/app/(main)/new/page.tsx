@@ -1,11 +1,12 @@
 // src/app/new/page.tsx
-import PropertyCard from "@/components/cards/PropertyCard";
+import { PropertyCard } from "@/components/cards/PropertyCard";
 import { getNewListings } from "@/lib/properties";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "New Listings | HomeConnect",
-  description: "Fresh properties recently added to HomeConnect. Discover the latest rental and sale properties in your area.",
+  description:
+    "Fresh properties recently added to HomeConnect. Discover the latest rental and sale properties in your area.",
 };
 
 export default async function NewListingsPage() {
@@ -37,43 +38,51 @@ export default async function NewListingsPage() {
         <>
           <div className="mb-6 flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {properties.length} new propert{properties.length !== 1 ? 'ies' : 'y'} added recently
+              Showing {properties.length} new propert
+              {properties.length !== 1 ? "ies" : "y"} added recently
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {properties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                property={property}
-                showNewBadge={true}
-              />
+              <PropertyCard key={property.id} property={property} />
             ))}
           </div>
 
           {/* Stats section */}
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-4">
             <div className="rounded-lg border bg-card p-6 text-center">
-              <div className="text-2xl font-bold text-primary">{properties.length}</div>
-              <div className="text-sm text-muted-foreground">New Properties</div>
+              <div className="text-2xl font-bold text-primary">
+                {properties.length}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                New Properties
+              </div>
             </div>
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {properties.filter(p => p.listingType === 'rent').length}
+                {properties.filter((p) => p.listingType === "rent").length}
               </div>
               <div className="text-sm text-muted-foreground">New Rentals</div>
             </div>
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {properties.filter(p => p.listingType === 'sale').length}
+                {properties.filter((p) => p.listingType === "sale").length}
               </div>
               <div className="text-sm text-muted-foreground">New For Sale</div>
             </div>
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {Math.round(properties.filter(p => p.isNew).length / properties.length * 100)}%
+                {Math.round(
+                  (properties.filter((p) => p.isNew).length /
+                    properties.length) *
+                    100
+                )}
+                %
               </div>
-              <div className="text-sm text-muted-foreground">Fresh Listings</div>
+              <div className="text-sm text-muted-foreground">
+                Fresh Listings
+              </div>
             </div>
           </div>
         </>

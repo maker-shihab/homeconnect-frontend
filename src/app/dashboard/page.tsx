@@ -1,141 +1,111 @@
 'use client';
 
-import { ProtectedRoute } from '@/components/protected-route';
+import {
+  BarChart,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Eye,
+  Home,
+  Link as LinkIcon,
+  Plus,
+  Receipt,
+  UserRound,
+  Users,
+  Wrench
+} from 'lucide-react';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { dashboardApi, DashboardData } from '@/lib/api/dashboard';
-import { useAuth } from '@/lib/auth-context';
-import { CalendarIcon, ChartBarIcon, Eye, EyeIcon, LinkIcon, PlusIcon, WrenchIcon } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
-export default function DashboardPage() {
-  const { user } = useAuth();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+import { StatCard } from '@/components/cards/StatCard.tsx';
+import { ProtectedRoute } from '@/components/protected-route';
+import { IDashboardOverviewResponse, IUser } from '@/lib/api/dashboard';
+
+const formatCurrency = (amount: number | undefined) => {
+  if (amount === undefined) return 'BDT 0';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'BDT',
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const getActivityIcon = (action: string) => {
+  switch (action) {
+    case 'property_created':
+      return <Home className="h-5 w-5 text-green-500" />;
+    case 'maintenance_requested':
+      return <Wrench className="h-5 w-5 text-yellow-500" />;
+    case 'user_login':
+      return <Users className="h-5 w-5 text-blue-500" />;
+    case 'maintenance_status_changed':
+      return <CheckCircle2 className="h-5 w-5 text-indigo-500" />;
+    default:
+      return <Clock className="h-5 w-5 text-gray-400" />;
+  }
+};
+
+const getStatusColor = (status: string | undefined) => {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'in_progress':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'completed':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'cancelled':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
+
+const getPriorityColor = (priority: string | undefined) => {
+  switch (priority) {
+    case 'high':
+      return 'bg-red-100 text-red-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'low':
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+interface DashboardPageClientProps {
+  user: IUser | null;
+  dashboardData: IDashboardOverviewResponse | null;
+}
+
+export default function DashboardPageClient({ user, dashboardData }: DashboardPageClientProps) {
+
   const [markingRead, setMarkingRead] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const data = await dashboardApi.getDashboard();
-      setDashboardData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
+  const handleMarkAsRead = (id: string) => {
+    setMarkingRead(id);
+    console.log(`Marking ${id} as read`);
+    setTimeout(() => setMarkingRead(null), 1000);
   };
 
-  const handleMarkAsRead = async (activityId: string) => {
-    try {
-      setMarkingRead(activityId);
-      await dashboardApi.markActivityAsRead(activityId);
-
-      // Update local state
-      setDashboardData(prev => prev ? {
-        ...prev,
-        recentActivities: prev.recentActivities.map(activity =>
-          activity.id === activityId ? { ...activity, read: true } : activity
-        )
-      } : null);
-    } catch (error) {
-      console.error('Failed to mark activity as read:', error);
-    } finally {
-      setMarkingRead(null);
-    }
+  const handleMarkAllAsRead = () => {
   };
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      await dashboardApi.markAllActivitiesAsRead();
-
-      // Update local state
-      setDashboardData(prev => prev ? {
-        ...prev,
-        recentActivities: prev.recentActivities.map(activity => ({
-          ...activity,
-          read: true
-        }))
-      } : null);
-    } catch (error) {
-      console.error('Failed to mark all activities as read:', error);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'available': return 'bg-green-100 text-green-800 border-green-200';
-      case 'rented': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'maintenance': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'occupied': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'pending': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'application': return '📝';
-      case 'booking': return '✅';
-      case 'maintenance': return '🔧';
-      case 'payment': return '💰';
-      case 'system': return '⚙️';
-      default: return '📌';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Card className="w-96">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-red-500 mb-4">Error: {error}</p>
-                <Button onClick={fetchDashboardData}>
-                  Retry
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </ProtectedRoute>
-    );
-  }
+  const occupancyRate =
+    (dashboardData?.stats?.totalProperties && dashboardData.stats.totalProperties > 0)
+      ? (
+        ((dashboardData.stats.occupiedProperties || 0) /
+          dashboardData.stats.totalProperties) *
+        100
+      ).toFixed(0)
+      : 0;
 
   return (
     <ProtectedRoute>
@@ -145,17 +115,20 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.name}!
+                Welcome back, {user?.name || 'Guest'}!
               </h1>
               <p className="text-gray-600 mt-1">
-                {user?.role === 'landlord' ? 'Property Management Dashboard' : 'Tenant Dashboard'}
+                {user?.role === 'landlord' && 'Property Management Dashboard'}
+                {user?.role === 'admin' && 'System Administration Dashboard'}
+                {user?.role === 'tenant' && 'Tenant Dashboard'}
+                {user?.role === 'support' && 'Support Dashboard'}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               {user?.role === 'landlord' && (
                 <Link href="/properties/add">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-                    <PlusIcon className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
                     Add New Property
                   </Button>
                 </Link>
@@ -171,37 +144,37 @@ export default function DashboardPage() {
 
           {dashboardData && (
             <div className="space-y-6">
-              {/* Property Stats */}
+              {/* Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                   title="Total Properties"
-                  value={dashboardData.stats.total.toString()}
+                  value={(dashboardData.stats?.totalProperties || 0).toString()}
                   description="All your properties"
-                  icon="🏠"
+                  icon={<Building2 className="h-6 w-6" />}
                 />
                 <StatCard
-                  title="Available"
-                  value={dashboardData.stats.available.toString()}
+                  title="Properties for Rent"
+                  value={(dashboardData.stats?.totalPropertiesForRent || 0).toString()}
                   description="Ready to rent"
-                  icon="🟢"
+                  icon={<Receipt className="h-6 w-6" />}
                   trend="positive"
                 />
                 <StatCard
-                  title="Rented"
-                  value={dashboardData.stats.rented.toString()}
+                  title="Occupied Properties"
+                  value={(dashboardData.stats?.occupiedProperties || 0).toString()}
                   description="Currently occupied"
-                  icon="🔑"
+                  icon={<UserRound className="h-6 w-6" />}
                 />
                 <StatCard
-                  title="Maintenance"
-                  value={dashboardData.stats.maintenance.toString()}
+                  title="Pending Maintenance"
+                  value={(dashboardData.stats?.pendingMaintenance || 0).toString()}
                   description="Needs attention"
-                  icon="🔧"
+                  icon={<Wrench className="h-6 w-6" />}
                   trend="negative"
                 />
               </div>
 
-              {/* Quick Stats & Revenue */}
+              {/* Performance Overview & User Info */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                   <CardHeader>
@@ -211,30 +184,30 @@ export default function DashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
                         <p className="text-2xl font-bold text-green-600">
-                          {formatCurrency(dashboardData.quickStats.monthlyRevenue)}
+                          {formatCurrency(dashboardData.stats?.totalRevenue || 0)}
                         </p>
-                        <p className="text-xs text-gray-500">Current month</p>
+                        <p className="text-xs text-gray-500">All-time revenue</p>
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-gray-600">Occupancy Rate</p>
                         <p className="text-2xl font-bold text-blue-600">
-                          {dashboardData.quickStats.occupancyRate}%
+                          {occupancyRate}%
                         </p>
                         <p className="text-xs text-gray-500">Properties occupied</p>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-gray-600">Pending Applications</p>
+                        <p className="text-sm font-medium text-gray-600">Properties for Sale</p>
                         <p className="text-2xl font-bold text-orange-600">
-                          {dashboardData.quickStats.pendingApplications}
+                          {dashboardData.stats?.totalPropertiesForSale || 0}
                         </p>
-                        <p className="text-xs text-gray-500">Awaiting review</p>
+                        <p className="text-xs text-gray-500">Awaiting sale</p>
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-gray-600">Maintenance Requests</p>
                         <p className="text-2xl font-bold text-yellow-600">
-                          {dashboardData.quickStats.maintenanceRequests}
+                          {dashboardData.stats?.pendingMaintenance || 0}
                         </p>
                         <p className="text-xs text-gray-500">Needs attention</p>
                       </div>
@@ -244,18 +217,18 @@ export default function DashboardPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Tenant Information</CardTitle>
-                    <CardDescription>Current tenant stats</CardDescription>
+                    <CardTitle>User Information</CardTitle>
+                    <CardDescription>System-wide stats</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center">
                       <p className="text-4xl font-bold text-gray-900 mb-2">
-                        {dashboardData.quickStats.totalTenants}
+                        {dashboardData.stats?.totalUsers || 0}
                       </p>
-                      <p className="text-gray-600">Active Tenants</p>
+                      <p className="text-gray-600">Total Users</p>
                       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm text-blue-700">
-                          {dashboardData.quickStats.occupancyRate}% occupancy rate
+                          {dashboardData.stats?.totalLandlords || 0} Active Landlords
                         </p>
                       </div>
                     </div>
@@ -263,7 +236,7 @@ export default function DashboardPage() {
                 </Card>
               </div>
 
-              {/* Recent Activities & Properties */}
+              {/* Recent Activities & Pending Maintenance */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Activities */}
                 <Card>
@@ -273,7 +246,7 @@ export default function DashboardPage() {
                       <CardDescription>Latest updates and requests</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      {dashboardData.recentActivities.some(activity => !activity.read) && (
+                      {dashboardData?.recentActivity?.length > 0 && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -293,32 +266,34 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {dashboardData.recentActivities.slice(0, 6).map((activity) => (
+                      {dashboardData?.recentActivity?.slice(0, 6).map((activity) => (
                         <div
                           key={activity.id}
-                          className={`flex items-start space-x-3 p-3 rounded-lg border ${!activity.read ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
-                            } transition-colors duration-200`}
+                          className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors duration-200 ${false // এখানে আপনার 'read' লজিক বসাতে পারেন (e.g., !activity.read)
+                            ? 'bg-blue-50 border-blue-200'
+                            : 'bg-white border-gray-200'
+                            }`}
                         >
                           <span className="text-lg mt-0.5 flex-shrink-0">
-                            {getActivityIcon(activity.type)}
+                            {getActivityIcon(activity.action)}
                           </span>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 text-sm">
-                              {activity.title}
+                              {activity.message}
                             </p>
                             <p className="text-gray-600 text-sm mt-1">
-                              {activity.description}
+                              by {activity.user.name}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                              {new Date(activity.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
-                                minute: '2-digit'
+                                minute: '2-digit',
                               })}
                             </p>
                           </div>
-                          {!activity.read && (
+                          {true && ( // এখানে আপনার 'read' লজিক বসাতে পারেন (e.g., !activity.read)
                             <Button
                               variant="ghost"
                               size="sm"
@@ -329,27 +304,27 @@ export default function DashboardPage() {
                               {markingRead === activity.id ? (
                                 '...'
                               ) : (
-                                <EyeIcon className="h-3 w-3" />
+                                <Eye className="h-3 w-3" />
                               )}
                             </Button>
                           )}
                         </div>
                       ))}
                     </div>
-                    {dashboardData.recentActivities.length === 0 && (
+                    {(dashboardData?.recentActivity?.length || 0) === 0 && (
                       <p className="text-center text-gray-500 py-4">No recent activities</p>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Recent Properties */}
+                {/* Pending Maintenance */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Recent Properties</CardTitle>
-                      <CardDescription>Your recently added properties</CardDescription>
+                      <CardTitle>Pending Maintenance</CardTitle>
+                      <CardDescription>Requests needing attention</CardDescription>
                     </div>
-                    <Link href="/properties">
+                    <Link href="/dashboard/maintenance">
                       <Button variant="ghost" size="sm">
                         View All
                       </Button>
@@ -357,17 +332,17 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {dashboardData.recentProperties.slice(0, 5).map((property) => (
+                      {dashboardData?.pendingMaintenanceRequests?.slice(0, 5).map((request) => (
                         <Link
-                          key={property.id}
-                          href={`/properties/${property.id}`}
+                          key={request.id}
+                          href={`/dashboard/maintenance`} // অথবা `/maintenance/${request.id}`
                           className="block transition-transform hover:scale-[1.02]"
                         >
                           <div className="flex items-center space-x-4 p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all duration-200">
                             <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                               <Image
-                                src={property.image || '/default-property.jpg'}
-                                alt={property.title}
+                                src={request.images?.[0] || '/default-property.jpg'}
+                                alt={request.title}
                                 fill
                                 className="object-cover"
                                 onError={(e) => {
@@ -377,34 +352,37 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-gray-900 text-sm truncate">
-                                {property.title}
+                                {request.title}
                               </p>
                               <p className="text-gray-600 text-xs truncate">
-                                {property.address}
+                                {request.property.address}
                               </p>
                               <div className="flex items-center justify-between mt-1">
                                 <Badge
                                   variant="secondary"
-                                  className={`${getStatusColor(property.status)} text-xs`}
+                                  className={`${getStatusColor(request.status)} text-xs`}
                                 >
-                                  {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
+                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                 </Badge>
-                                <span className="text-sm font-semibold text-gray-900">
-                                  {formatCurrency(property.price)}/mo
-                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className={`${getPriorityColor(request.priority)} text-xs`}
+                                >
+                                  {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
+                                </Badge>
                               </div>
                             </div>
                           </div>
                         </Link>
                       ))}
                     </div>
-                    {dashboardData.recentProperties.length === 0 && (
+                    {(dashboardData?.pendingMaintenanceRequests?.length || 0) === 0 && (
                       <div className="text-center py-6">
-                        <p className="text-gray-500 mb-4">No properties added yet</p>
-                        {user?.role === 'landlord' && (
-                          <Link href="/properties/add">
+                        <p className="text-gray-500 mb-4">No pending maintenance</p>
+                        {user?.role === 'tenant' && (
+                          <Link href="/maintenance/request">
                             <Button className="bg-blue-600 hover:bg-blue-700">
-                              Add Your First Property
+                              Submit a Request
                             </Button>
                           </Link>
                         )}
@@ -425,26 +403,26 @@ export default function DashboardPage() {
                     {user?.role === 'landlord' && (
                       <Link href="/properties/add">
                         <Button variant="outline" className="w-full h-16 flex-col gap-1">
-                          <PlusIcon className="h-5 w-5" />
+                          <Plus className="h-5 w-5" />
                           <span className="text-xs">Add Property</span>
                         </Button>
                       </Link>
                     )}
                     <Link href="/bookings">
                       <Button variant="outline" className="w-full h-16 flex-col gap-1">
-                        <CalendarIcon className="h-5 w-5" />
+                        <Calendar className="h-5 w-5" />
                         <span className="text-xs">View Bookings</span>
                       </Button>
                     </Link>
                     <Link href="/dashboard/maintenance">
                       <Button variant="outline" className="w-full h-16 flex-col gap-1">
-                        <WrenchIcon className="h-5 w-5" />
+                        <Wrench className="h-5 w-5" />
                         <span className="text-xs">Maintenance</span>
                       </Button>
                     </Link>
                     <Link href="/reports">
                       <Button variant="outline" className="w-full h-16 flex-col gap-1">
-                        <ChartBarIcon className="h-5 w-5" />
+                        <BarChart className="h-5 w-5" />
                         <span className="text-xs">Reports</span>
                       </Button>
                     </Link>
@@ -453,126 +431,21 @@ export default function DashboardPage() {
               </Card>
             </div>
           )}
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
-}
 
-// Stat Card Component
-function StatCard({
-  title,
-  value,
-  description,
-  icon,
-  trend
-}: {
-  title: string;
-  value: string;
-  description: string;
-  icon: string;
-  trend?: 'positive' | 'negative';
-}) {
-  return (
-    <Card className="transition-all duration-200 hover:shadow-md">
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-            <p className="text-xs text-gray-500 mt-1">{description}</p>
-          </div>
-          <div className="text-3xl">{icon}</div>
-        </div>
-        {trend && (
-          <div className={`mt-2 text-xs font-medium ${trend === 'positive' ? 'text-green-600' : 'text-red-600'
-            }`}>
-            {trend === 'positive' ? '↑' : '↓'} Trending
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Skeleton Loader
-function DashboardSkeleton() {
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <Skeleton className="h-8 w-64 mb-2" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-            <div className="flex gap-4">
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-32" />
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {/* Stats Grid Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="pt-6">
-                    <Skeleton className="h-4 w-24 mb-2" />
-                    <Skeleton className="h-8 w-16 mb-2" />
-                    <Skeleton className="h-3 w-32" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Performance Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <Skeleton className="h-6 w-48 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i}>
-                        <Skeleton className="h-4 w-32 mb-2" />
-                        <Skeleton className="h-8 w-24" />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-40 mb-2" />
-                  <Skeleton className="h-4 w-28" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-16 w-full mb-4" />
-                  <Skeleton className="h-12 w-full" />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Activities & Properties Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <Skeleton className="h-6 w-40 mb-2" />
-                    <Skeleton className="h-4 w-32" />
-                  </CardHeader>
-                  <CardContent>
-                    {Array.from({ length: 3 }).map((_, j) => (
-                      <Skeleton key={j} className="h-16 w-full mb-4" />
-                    ))}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          {/* ডেটা লোড না হলে বা লোডিং অবস্থায় থাকলে */}
+          {!dashboardData && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Loading Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-gray-500 py-10">
+                  Loading dashboard data...
+                </p>
+                {/* এখানে একটি স্পিনার (Spinner) অ্যাড করতে পারেন */}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </ProtectedRoute>

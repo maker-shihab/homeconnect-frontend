@@ -1,5 +1,5 @@
-import PropertyCard from "@/components/cards/PropertyCard";
-import { getFeaturedProperties } from "@/lib/properties";
+import { PropertyCard } from "@/components/cards/PropertyCard";
+import { getFeaturedProperties } from "@/lib/api/properties-api";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

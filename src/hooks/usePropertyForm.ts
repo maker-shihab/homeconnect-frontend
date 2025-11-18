@@ -3,7 +3,7 @@
 
 import { useCreateProperty } from '@/hooks/useProperties';
 import { CreatePropertyData } from '@/lib/api/properties-api';
-import { FormErrors, initialFormData, PropertyFormData } from '@/types/properties-type';
+import { FormErrors, initialFormData, PropertyFormData } from '@/types/property.types';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';

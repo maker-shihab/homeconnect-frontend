@@ -1,101 +1,48 @@
-// src/lib/properties.ts
-import { propertiesApi, PropertyResponse } from './api/properties-api';
+import type { PropertyResponse } from "@/types/property.types";
+import {
+  PropertyResponse as ApiPropertyResponse,
+  getFeaturedProperties,
+  getPropertyById,
+  isNewListing,
+  propertiesApi,
+  PropertyFilters,
+  queryProperties,
+} from "./api/properties-api";
 
-export type ListingType = "rent" | "sale";
-
-export interface Property {
-  id: string;
-  title: string;
-  city: string;
-  neighborhood?: string;
-  address?: string;
-  price: number;
-  currency?: string;
-  listingType: ListingType;
-  beds: number;
-  baths: number;
-  areaSize: number;
-  areaUnit?: "sqft" | "sqm";
-  propertyType?: string;
-  imageUrl: string;
-  featured?: boolean;
-  createdAt: string;
-  lat?: number;
-  lng?: number;
-  description?: string;
-  isNew?: boolean;
+/**
+ * Fetch a list of properties using the public properties API.
+ * Falls back to an empty array if the response payload is missing.
+ */
+export async function listProperties(
+  filters: PropertyFilters = {}
+): Promise<PropertyResponse[]> {
+  const result = await propertiesApi.getProperties(filters);
+  const properties = result?.properties ?? [];
+  return properties as unknown as PropertyResponse[];
 }
 
-export type QueryOpts = {
-  listingType?: ListingType;
-  featured?: boolean;
-  city?: string;
-  q?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  bedsMin?: number;
-  sort?: "newest" | "price-asc" | "price-desc";
-  limit?: number;
-  page?: number;
-};
+/**
+ * Fetch the newest property listings within the supplied time window.
+ * Defaults to the last 30 days and applies a sensible fetch limit.
+ */
+export async function getNewListings(
+  days = 30,
+  limit = 24
+): Promise<PropertyResponse[]> {
+  const result = await propertiesApi.getProperties({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+    limit,
+  });
 
-const DEFAULT_NEW_DAYS = 30;
+  const properties = (result?.properties ?? []) as ApiPropertyResponse[];
 
-export function isNewListing(p: { createdAt: string }, days = DEFAULT_NEW_DAYS) {
-  const ageDays = (Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-  return ageDays <= days;
+  return properties
+    .filter((property) => isNewListing(property, days))
+    .map((property) => ({
+      ...property,
+      isNew: true,
+    })) as unknown as PropertyResponse[];
 }
 
-// Use API functions instead of local JSON
-// export async function listProperties(): Promise<PropertyResponse[]> {
-//   const result = await propertiesApi.getProperties({ limit: 1000 }); // Get all properties
-//   return result;
-// }
-
-export async function getPropertyById(id: string): Promise<PropertyResponse | null> {
-  return await propertiesApi.getProperty(id);
-}
-
-export async function queryProperties(opts: QueryOpts = {}) {
-  return await propertiesApi.getProperties(opts);
-}
-
-// Featured listings
-export async function getFeaturedProperties(limit?: number): Promise<PropertyResponse[]> {
-  return await propertiesApi.getFeaturedProperties(limit);
-}
-
-// New listings
-// export async function getNewListings(days = DEFAULT_NEW_DAYS, limit?: number): Promise<PropertyResponse[]> {
-//   const allProperties = await listProperties();
-//   let items = allProperties.filter((p) => isNewListing(p, days));
-
-//   if (typeof limit === "number") {
-//     items = items.slice(0, limit);
-//   }
-
-//   return items;
-// }
-
-// Map markers
-// export async function getMapMarkers(type: ListingType | "all" = "all") {
-//   const allProperties = await listProperties();
-
-//   return allProperties
-//     .filter((p) => (type === "all" ? true : p.listingType === type))
-//     .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
-//     .map((p) => ({
-//       id: p.id,
-//       title: p.title,
-//       lat: p.lat as number,
-//       lng: p.lng as number,
-//       price: p.price,
-//       currency: p.currency ?? "USD",
-//       listingType: p.listingType,
-//     }));
-// }
-
-// Get available filters
-export async function getAvailableFilters() {
-  return await propertiesApi.getAvailableFilters();
-}
+export { getFeaturedProperties, getPropertyById, queryProperties };

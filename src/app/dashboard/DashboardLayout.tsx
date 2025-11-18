@@ -1,29 +1,73 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
-import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLogoutMutation } from "@/redux/features/auth/authApiSlice";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
+import { useAppSelector } from '@/redux/hooks';
+import {
+  Heart,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  PlusCircle,
+  Settings,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { toast } from "sonner";
 import DashboardSidebar from './DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const router = useRouter();
+  const user = useAppSelector(selectCurrentUser);
+
+  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser().unwrap();
+      toast.success("Logged out successfully.");
+      router.push('/login');
+    } catch (err) {
+      toast.error("Failed to log out. Please try again.");
+      console.error('Failed to log out:', err);
+    }
+  };
+
+  const initials = useMemo(() => {
+    const n = user?.name?.trim();
+    if (!n) return "U";
+    const parts = n.split(" ").filter(Boolean);
+    return (parts[0]?.[0] ?? "U").toUpperCase() + (parts[1]?.[0]?.toUpperCase() ?? "");
+  }, [user?.name]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50/50">
-      {/* Sidebar - fixed full height */}
-      <div className="fixed inset-y-0 left-0 z-50 min-h-screen h-full">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      {/* Sidebar - Fixed 400px width */}
+      <div className="fixed inset-y-0 left-0 z-50 w-80 h-full">
         <DashboardSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          role={user?.role as 'tenant' | 'landlord' | 'admin' | 'support' ?? 'tenant'}
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col w-full lg:ml-64">
-        {/* Header */}
-        <header className="flex-shrink-0 bg-white shadow-sm border-b border-gray-200 h-20 z-40 sticky top-0">
-          <div className="flex items-center justify-between px-6 py-4">
-            {/* Left: Mobile menu */}
+      {/* Main Content - Exactly 400px offset */}
+      <div className="flex-1 flex flex-col ml-0 lg:ml-80 w-[calc(100vw-400px)]">
+        {/* Header - Perfectly aligned with 400px offset */}
+        <header className="flex-shrink-0 bg-white shadow-sm border-b border-gray-200 h-20 z-40 sticky top-0 w-full">
+          <div className="flex items-center justify-between px-6 py-4 w-full">
             <div className="flex items-center">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -48,50 +92,96 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </h1>
             </div>
 
-            {/* Right: Profile + Logout */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex flex-col items-end">
-                  <span className="text-sm font-medium text-gray-900">
-                    {user?.name || 'User'}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {user?.email || 'user@example.com'}
-                  </span>
-                </div>
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                  <span className="text-white text-sm font-medium">
-                    {(user?.name?.[0] || 'U').toUpperCase()}
-                  </span>
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none flex items-center gap-2 cursor-pointer">
+                  <div className="hidden lg:flex flex-col items-end">
+                    <span className="text-sm font-semibold text-gray-800">{user?.name}</span>
+                    <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+                  </div>
+                  <Avatar className="h-10 w-10 border-2 border-primary/20">
+                    <AvatarImage src={user?.avatar} alt={user?.name ?? "User"} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{user?.name ?? "User"}</span>
+                      <span className="text-xs text-muted-foreground font-normal truncate">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
 
-              <button
-                onClick={logout}
-                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                title="Logout"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+
+                  {user?.role === 'landlord' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/my-properties" className="cursor-pointer">
+                          <Home className="mr-2 h-4 w-4" />
+                          My Properties
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/add-property" className="cursor-pointer">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Add New Property
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/favorites" className="cursor-pointer">
+                      <Heart className="mr-2 h-4 w-4" />
+                      My Favorites
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/messages" className="cursor-pointer">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Messages
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
 
-        {/* Scrollable content */}
-        <main className="flex-1 overflow-y-auto scroll-smooth">
-          {children}
+        {/* Main Content - Perfect width calculation */}
+        <main className="flex-1 overflow-y-auto scroll-smooth w-full">
+          <div className="w-full h-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

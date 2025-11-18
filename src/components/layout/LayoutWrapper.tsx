@@ -10,7 +10,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   // Check if current route is dashboard or auth pages
   const isDashboard = pathname?.startsWith('/dashboard');
-  const isAuthPage = pathname?.startsWith('/signin') || pathname?.startsWith('/signup');
+  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
 
   // Don't show header/footer for dashboard and auth pages
   if (isDashboard) {

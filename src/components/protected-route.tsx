@@ -1,9 +1,14 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Spinner } from './ui/spinner';
+
+import {
+  selectCurrentUser,
+  selectIsAuthenticated,
+} from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,34 +16,37 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const user = useAppSelector(selectCurrentUser);
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/signin');
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
     }
 
-    if (!isLoading && isAuthenticated && requiredRole && user?.role !== requiredRole) {
+    if (requiredRole && user?.role !== requiredRole) {
       router.push('/unauthorized');
     }
-  }, [isAuthenticated, isLoading, user, requiredRole, router]);
+  }, [isAuthenticated, user, requiredRole, router]);
 
-  if (isLoading) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner />
-        <span className="ml-2">Loading...</span>
+        <span className="ml-2">Redirecting to signin...</span>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
   if (requiredRole && user?.role !== requiredRole) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+        <span className="ml-2">Access Denied. Redirecting...</span>
+      </div>
+    );
   }
 
   return <>{children}</>;

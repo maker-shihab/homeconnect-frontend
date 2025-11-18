@@ -2,8 +2,12 @@
 
 import { api } from './api';
 
+// --- Interfaces & Types ---
+
+export type ListingType = 'rent' | 'sale';
+
 export interface PropertyFilters {
-  listingType?: 'rent' | 'sale';
+  listingType?: ListingType;
   propertyType?: string;
   minRent?: number;
   maxRent?: number;
@@ -33,6 +37,11 @@ export interface PropertyFilters {
   ownershipType?: string;
   priceNegotiable?: boolean;
   mortgageAvailable?: boolean;
+  isFeatured?: boolean;
+  isAvailable?: boolean;
+  q?: string;
+  minBeds?: number;
+  sort?: string;
 }
 
 export interface PropertyResponse {
@@ -199,6 +208,8 @@ export interface LikeResponse {
   liked: boolean;
 }
 
+// --- API Implementation ---
+
 export const propertiesApi = {
   getAllProperties: async (): Promise<PropertyResponse[]> => {
     const response = await api.get('/properties');
@@ -208,6 +219,13 @@ export const propertiesApi = {
 
   // Get all properties with filters
   getProperties: async (filters: PropertyFilters = {}): Promise<PropertySearchResult> => {
+    // Mapping simple filters to backend filters if needed
+    if (filters.q) {
+      filters.search = filters.q;
+      delete filters.q;
+    }
+    // Add other mappings if 'sort' or 'minBeds' are used
+
     const response = await api.get('/properties', { params: filters });
     return response.data.data;
   },
@@ -300,3 +318,33 @@ export const propertiesApi = {
     return response.data.data;
   },
 };
+
+// --- Utility & Wrapper Functions ---
+
+const DEFAULT_NEW_DAYS = 30;
+
+export function isNewListing(p: { createdAt: string }, days = DEFAULT_NEW_DAYS) {
+  const ageDays = (Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+  return ageDays <= days;
+}
+
+// Get single property by ID
+export async function getPropertyById(id: string): Promise<PropertyResponse | null> {
+  return await propertiesApi.getProperty(id);
+}
+
+// Query properties with filters
+export async function queryProperties(opts: PropertyFilters = {}) {
+  return await propertiesApi.getProperties(opts);
+}
+
+// Featured listings
+export async function getFeaturedProperties(limit?: number): Promise<PropertyResponse[]> {
+  return await propertiesApi.getFeaturedProperties(limit);
+}
+
+// Get available filters
+export async function getAvailableFilters() {
+  return await propertiesApi.getAvailableFilters();
+}
+

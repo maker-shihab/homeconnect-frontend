@@ -1,7 +1,6 @@
-
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
-import { AuthProvider } from "@/lib/auth-context";
-import { nunitoSans } from "@/lib/fonts";
+import { nunitoSans, pacifico } from "@/lib/fonts";
+import { ReduxProvider } from "@/redux/ReduxProvider";
 import "leaflet/dist/leaflet.css";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
@@ -21,15 +20,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        className={`$ ${nunitoSans.className} antialiased relative z-10`}
+        className={`${nunitoSans.variable} ${pacifico.variable} antialiased relative z-10`}
+        suppressHydrationWarning={true}
       >
         <ReactQueryProvider>
-          <AuthProvider>
+          <ReduxProvider>
             <LayoutWrapper>{children}</LayoutWrapper>
             <Toaster richColors position="top-right" closeButton />
-          </AuthProvider>
+          </ReduxProvider>
         </ReactQueryProvider>
       </body>
     </html>

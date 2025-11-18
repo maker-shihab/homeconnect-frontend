@@ -100,23 +100,7 @@ export default function Footer() {
       <div className="relative z-10 pt-20 pb-12">
         <div className="container mx-auto px-4">
           {/* Academic Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-3 px-5 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl mb-5">
-              <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full animate-pulse" />
-              <span className="text-xs font-semibold text-cyan-300 uppercase tracking-wider">Premium Real Estate Services</span>
-              <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full animate-pulse" />
-            </div>
 
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Find Your <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Dream Home</span>
-              <br />With <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">Confidence</span>
-            </h2>
-
-            <p className="text-base text-gray-300 max-w-xl mx-auto leading-snug">
-              Discover exceptional properties with our premium real estate services.
-              We make finding your perfect home simple, secure, and seamless.
-            </p>
-          </div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">

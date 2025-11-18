@@ -1,15 +1,22 @@
 "use client";
 
-import PropertyCard, { Property } from "@/components/cards/PropertyCard";
+import { PropertyCard } from "@/components/cards/PropertyCard";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useProperties } from "@/hooks/useProperties";
+import type { PropertyFilters } from "@/lib/api/properties-api";
+import type { PropertyResponse } from "@/types/property.types";
+import { isRentalResponse } from "@/types/property.types";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-
-type PropertyWithMeta = Property & { createdAt?: string | number | Date };
 
 type SortKey = "newest" | "price-asc" | "price-desc";
 type ListingFilter = "all" | "rent" | "sale";
@@ -21,6 +28,14 @@ interface NewListingsGridProps {
   initialLimit?: number;
 }
 
+const getPriceValue = (property: PropertyResponse) =>
+  isRentalResponse(property)
+    ? property.rentPrice ?? 0
+    : property.salePrice ?? 0;
+
+const getCurrencyValue = (property: PropertyResponse) =>
+  property.currency ?? "BDT";
+
 export default function NewListingsGrid({
   title = "New Listings",
   viewAllHref,
@@ -30,31 +45,48 @@ export default function NewListingsGrid({
   const [listingType, setListingType] = useState<ListingFilter>(initialType);
   const [bedsMin, setBedsMin] = useState<number>(0);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
-  const [sortBy, setSortBy] = useState<SortKey>("newest");
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
 
-  // Build query options
-  const queryOpts = useMemo(() => ({
-    listingType: listingType === 'all' ? undefined : listingType,
-    bedsMin: bedsMin > 0 ? bedsMin : undefined,
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1],
-    sort: sortBy,
-    limit: initialLimit,
-  }), [listingType, bedsMin, priceRange, sortBy, initialLimit]);
+  const queryOpts = useMemo<PropertyFilters>(() => {
+    const sortConfig: Pick<PropertyFilters, "sortBy" | "sortOrder"> = {};
+    if (sortKey === "price-asc") {
+      sortConfig.sortBy = "price";
+      sortConfig.sortOrder = "asc";
+    } else if (sortKey === "price-desc") {
+      sortConfig.sortBy = "price";
+      sortConfig.sortOrder = "desc";
+    } else {
+      sortConfig.sortBy = "createdAt";
+      sortConfig.sortOrder = "desc";
+    }
+
+    return {
+      listingType: listingType === "all" ? undefined : listingType,
+      bedrooms: bedsMin > 0 ? { min: bedsMin } : undefined,
+      minPrice: priceRange[0],
+      maxPrice: priceRange[1],
+      limit: initialLimit,
+      ...sortConfig,
+    };
+  }, [listingType, bedsMin, priceRange, sortKey, initialLimit]);
 
   // Fetch properties from API
   const { data, isLoading, error } = useProperties(queryOpts);
 
-  const items = data?.items || [];
-  const currency = items[0]?.currency ?? "USD";
+  const rawItems = useMemo(() => data?.properties ?? [], [data?.properties]);
+  const items = useMemo(
+    () => rawItems as unknown as PropertyResponse[],
+    [rawItems]
+  );
+  const currency = items[0] ? getCurrencyValue(items[0]) : "BDT";
 
   // Update price range when data loads
   useEffect(() => {
     if (items.length > 0) {
-      const prices = items.map((i) => i.price);
+      const prices = items.map((i) => getPriceValue(i));
       const min = Math.min(...prices);
       const max = Math.max(...prices);
-      setPriceRange(current =>
+      setPriceRange((current) =>
         current[0] === 0 && current[1] === 1000000 ? [min, max] : current
       );
     }
@@ -63,8 +95,8 @@ export default function NewListingsGrid({
   // Dynamic slider step
   const step = useMemo(() => {
     if (items.length === 0) return 1;
-    const minPrice = Math.min(...items.map(i => i.price));
-    const maxPrice = Math.max(...items.map(i => i.price));
+    const minPrice = Math.min(...items.map(getPriceValue));
+    const maxPrice = Math.max(...items.map(getPriceValue));
     const span = Math.max(1, maxPrice - minPrice);
     const rough = Math.round(span / 50);
     return Math.max(1, rough);
@@ -74,14 +106,13 @@ export default function NewListingsGrid({
     setListingType("all");
     setBedsMin(0);
     if (items.length > 0) {
-      const prices = items.map((i) => i.price);
+      const prices = items.map(getPriceValue);
       setPriceRange([Math.min(...prices), Math.max(...prices)]);
     }
-    setSortBy("newest");
+    setSortKey("newest");
   };
 
-  const formatPrice = (n: number) =>
-    `${currency} ${n.toLocaleString()}`;
+  const formatPrice = (n: number) => `${currency} ${n.toLocaleString()}`;
 
   if (error) {
     return (
@@ -122,9 +153,24 @@ export default function NewListingsGrid({
               onValueChange={(v) => v && setListingType(v as ListingFilter)}
               className="rounded-md bg-muted p-1"
             >
-              <ToggleGroupItem value="all" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">All</ToggleGroupItem>
-              <ToggleGroupItem value="rent" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Rent</ToggleGroupItem>
-              <ToggleGroupItem value="sale" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Buy</ToggleGroupItem>
+              <ToggleGroupItem
+                value="all"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="rent"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Rent
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="sale"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Buy
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
 
@@ -137,18 +183,46 @@ export default function NewListingsGrid({
               onValueChange={(v) => v && setBedsMin(Number(v))}
               className="rounded-md bg-muted p-1"
             >
-              <ToggleGroupItem value="0" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Any</ToggleGroupItem>
-              <ToggleGroupItem value="1" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">1+</ToggleGroupItem>
-              <ToggleGroupItem value="2" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">2+</ToggleGroupItem>
-              <ToggleGroupItem value="3" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">3+</ToggleGroupItem>
-              <ToggleGroupItem value="4" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">4+</ToggleGroupItem>
+              <ToggleGroupItem
+                value="0"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Any
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="1"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                1+
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="2"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                2+
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="3"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                3+
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="4"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                4+
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
 
           {/* Sort */}
           <div className="md:col-span-3">
             <label className="mb-2 block text-sm font-medium">Sort by</label>
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+            <Select
+              value={sortKey}
+              onValueChange={(v) => setSortKey(v as SortKey)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -174,7 +248,9 @@ export default function NewListingsGrid({
                 max={1000000}
                 step={step}
                 value={priceRange}
-                onValueChange={(v) => setPriceRange([v[0]!, v[1]!] as [number, number])}
+                onValueChange={(v) =>
+                  setPriceRange([v[0]!, v[1]!] as [number, number])
+                }
                 className="w-full"
                 disabled={isLoading}
               />
@@ -199,7 +275,10 @@ export default function NewListingsGrid({
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-lg bg-muted h-80"></div>
+              <div
+                key={i}
+                className="animate-pulse rounded-lg bg-muted h-80"
+              ></div>
             ))}
           </div>
         ) : items.length === 0 ? (

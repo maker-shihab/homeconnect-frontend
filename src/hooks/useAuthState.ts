@@ -30,7 +30,7 @@ export const useAuthState = () => {
     localStorage.removeItem('user');
     setUser(null);
     setToken(null);
-    window.location.href = '/signin';
+    window.location.href = '/login';
   };
 
   return {
