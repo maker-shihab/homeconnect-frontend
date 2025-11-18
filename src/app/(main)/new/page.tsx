@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewListingsPage() {
-  const properties = await getNewListings(30); // last 30 days
+  const properties = await getNewListings(30).catch(() => null); // last 30 days
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6 mt-20">
@@ -21,7 +21,7 @@ export default async function NewListingsPage() {
         </p>
       </div>
 
-      {properties.length === 0 ? (
+      {!properties || properties.length === 0 ? (
         <div className="rounded-xl border bg-background p-12 text-center">
           <div className="text-2xl font-semibold mb-2">No New Listings</div>
           <p className="text-muted-foreground mb-6">
@@ -36,48 +36,60 @@ export default async function NewListingsPage() {
         </div>
       ) : (
         <>
-          <div className="mb-6 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Showing {properties.length} new propert
-              {properties.length !== 1 ? "ies" : "y"} added recently
+          {properties && (
+            <div className="mb-6 flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing {properties.length} new propert
+                {properties.length !== 1 ? "ies" : "y"} added recently
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {properties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          {properties && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          )}
 
           {/* Stats section */}
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-4">
+            {properties && (
+              <div className="rounded-lg border bg-card p-6 text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {properties.length}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  New Properties
+                </div>
+              </div>
+            )}
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {properties.length}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                New Properties
-              </div>
-            </div>
-            <div className="rounded-lg border bg-card p-6 text-center">
-              <div className="text-2xl font-bold text-primary">
-                {properties.filter((p) => p.listingType === "rent").length}
+                {properties
+                  ? properties.filter((p) => p.listingType === "rent").length
+                  : 0}
               </div>
               <div className="text-sm text-muted-foreground">New Rentals</div>
             </div>
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {properties.filter((p) => p.listingType === "sale").length}
+                {properties
+                  ? properties.filter((p) => p.listingType === "sale").length
+                  : 0}
               </div>
               <div className="text-sm text-muted-foreground">New For Sale</div>
             </div>
             <div className="rounded-lg border bg-card p-6 text-center">
               <div className="text-2xl font-bold text-primary">
-                {Math.round(
-                  (properties.filter((p) => p.isNew).length /
-                    properties.length) *
-                    100
-                )}
+                {properties && properties.length > 0
+                  ? Math.round(
+                      (properties.filter((p) => p.isNew).length /
+                        properties.length) *
+                        100
+                    )
+                  : 0}
                 %
               </div>
               <div className="text-sm text-muted-foreground">
