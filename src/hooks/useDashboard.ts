@@ -1,36 +1,24 @@
-// hooks/useDashboard.ts
-'use client';
+"use client";
 
-import { dashboardApi } from '@/lib/api/dashboard';
-import { useQuery } from '@tanstack/react-query';
+import { dashboardApi } from "@/lib/api/dashboard";
+import { useQuery } from "@tanstack/react-query";
 
 export const useDashboard = () => {
-  const statsQuery = useQuery({
-    queryKey: ['dashboard', 'stats'],
-    queryFn: dashboardApi.getStats,
+  const overviewQuery = useQuery({
+    queryKey: ["dashboard", "overview"],
+    queryFn: dashboardApi.getDashboard,
   });
 
-  const quickStatsQuery = useQuery({
-    queryKey: ['dashboard', 'quick-stats'],
-    queryFn: dashboardApi.getQuickStats,
-  });
-
-  const activitiesQuery = useQuery({
-    queryKey: ['dashboard', 'activities'],
-    queryFn: dashboardApi.getRecentActivities,
-  });
-
-  const propertiesQuery = useQuery({
-    queryKey: ['dashboard', 'properties'],
-    queryFn: dashboardApi.getRecentProperties,
-  });
+  const stats = overviewQuery.data?.stats;
+  const activities = overviewQuery.data?.recentActivity ?? [];
+  const properties = overviewQuery.data?.pendingMaintenanceRequests ?? [];
 
   return {
-    stats: statsQuery.data,
-    quickStats: quickStatsQuery.data,
-    activities: activitiesQuery.data,
-    properties: propertiesQuery.data,
-    isLoading: statsQuery.isLoading || quickStatsQuery.isLoading || activitiesQuery.isLoading || propertiesQuery.isLoading,
-    error: statsQuery.error || quickStatsQuery.error || activitiesQuery.error || propertiesQuery.error,
+    stats,
+    quickStats: stats,
+    activities,
+    properties,
+    isLoading: overviewQuery.isLoading,
+    error: overviewQuery.error,
   };
 };
