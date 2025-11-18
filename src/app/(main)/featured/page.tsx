@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FeaturedPage() {
-  const properties = await getFeaturedProperties();
+  const properties = await getFeaturedProperties().catch(() => null);
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6 mt-20">
@@ -22,7 +22,7 @@ export default async function FeaturedPage() {
         </p>
       </div>
 
-      {properties.length === 0 ? (
+      {!properties || properties.length === 0 ? (
         <div className="rounded-xl border bg-background p-12 text-center">
           <div className="text-2xl font-semibold mb-2">
             No Featured Properties
