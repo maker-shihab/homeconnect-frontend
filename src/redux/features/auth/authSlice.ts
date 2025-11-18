@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface AuthUser {
   id: string;
@@ -6,6 +6,7 @@ export interface AuthUser {
   email: string;
   role: string;
   avatar?: string;
+  phone?: string;
 }
 
 interface AuthState {
@@ -15,13 +16,13 @@ interface AuthState {
 }
 
 const getInitialState = (): AuthState => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return { user: null, token: null, isAuthenticated: false };
   }
 
   try {
-    const token = localStorage.getItem('token');
-    const userJson = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
+    const userJson = localStorage.getItem("user");
 
     if (token && userJson) {
       const user: AuthUser = JSON.parse(userJson);
@@ -45,7 +46,7 @@ const initialState: AuthState = {
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setCredentials: (
@@ -57,9 +58,9 @@ const authSlice = createSlice({
       state.token = token;
       state.isAuthenticated = true;
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
       }
     },
     logout: (state) => {
@@ -67,9 +68,9 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
 
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     },
     hydrateAuth: (state) => {
@@ -81,17 +82,20 @@ const authSlice = createSlice({
     updateUserProfile: (state, action: PayloadAction<Partial<AuthUser>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(state.user));
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(state.user));
         }
       }
-    }
+    },
   },
 });
 
-export const { setCredentials, logout, hydrateAuth, updateUserProfile } = authSlice.actions;
+export const { setCredentials, logout, hydrateAuth, updateUserProfile } =
+  authSlice.actions;
 
 export default authSlice.reducer;
 
-export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
-export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
+export const selectCurrentUser = (state: { auth: AuthState }) =>
+  state.auth.user;
+export const selectIsAuthenticated = (state: { auth: AuthState }) =>
+  state.auth.isAuthenticated;

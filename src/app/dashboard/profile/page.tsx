@@ -1,24 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle, Loader2, Shield, User as UserIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod'; // Zod import
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertTriangle, Loader2, Shield, User as UserIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod"; // Zod import
 
 // Amader notun Redux hooks ebong slice-er jinishpotro
-import { setLogout, updateUserProfile } from '@/redux/features/auth/authApiSlice';
-import { selectCurrentUser } from '@/redux/features/auth/authSelectors';
-import { User } from '@/redux/features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import type { AuthUser } from "@/redux/features/auth/authSlice";
+import {
+  logout,
+  selectCurrentUser,
+  updateUserProfile,
+} from "@/redux/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 // Amader notun User API
 
 // ShadCN UI Components
-import { ProtectedRoute } from '@/components/protected-route';
+import { ProtectedRoute } from "@/components/protected-route";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,14 +32,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { authApi } from '@/lib/api/auth-api';
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { authApi } from "@/lib/api/auth-api";
 
 interface IUpdateProfileRequest {
   name?: string;
@@ -47,50 +64,60 @@ interface IUpdateProfileRequest {
 // -----------------------------------------------------------------
 
 const updateProfileSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters'),
-  avatar: z.string().url('Invalid avatar URL (must be a full URL)').optional().or(z.literal('')),
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  avatar: z
+    .string()
+    .url("Invalid avatar URL (must be a full URL)")
+    .optional()
+    .or(z.literal("")),
 });
 type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 
 // 2. Change Password Schema
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your new password'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "New passwords don't match",
-  path: ['confirmPassword'], // Kon field-e error dekhabe
-});
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New passwords don't match",
+    path: ["confirmPassword"], // Kon field-e error dekhabe
+  });
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
-
 
 // -----------------------------------------------------------------
 // SUB-COMPONENT 1: General Information
 // -----------------------------------------------------------------
-function GeneralSettings({ user }: { user: User }) {
+function GeneralSettings({ user }: { user: AuthUser }) {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      name: user.name || '',
-      avatar: user.avatar || '',
+      name: user.name || "",
+      avatar: user.avatar || "",
     },
   });
 
-  const avatarPreview = form.watch('avatar');
-  const namePreview = form.watch('name');
+  const avatarPreview = form.watch("avatar");
+  const namePreview = form.watch("name");
 
   const getInitials = (name: string) => {
-    const parts = name.split(' ').filter(Boolean);
-    if (parts.length === 0) return 'U';
-    return (parts[0]?.[0] ?? 'U').toUpperCase() + (parts[1]?.[0]?.toUpperCase() ?? '');
-  }
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length === 0) return "U";
+    return (
+      (parts[0]?.[0] ?? "U").toUpperCase() +
+      (parts[1]?.[0]?.toUpperCase() ?? "")
+    );
+  };
 
   const onSubmit = async (data: UpdateProfileFormData) => {
     setIsSubmitting(true);
-    const toastId = toast.loading('Updating profile...');
+    const toastId = toast.loading("Updating profile...");
 
     try {
       // Shudhu poribortito data pathano
@@ -99,7 +126,7 @@ function GeneralSettings({ user }: { user: User }) {
       if (data.avatar !== user.avatar) changedData.avatar = data.avatar;
 
       if (Object.keys(changedData).length === 0) {
-        toast.info('No changes detected', { id: toastId });
+        toast.info("No changes detected", { id: toastId });
         setIsSubmitting(false);
         return;
       }
@@ -107,10 +134,12 @@ function GeneralSettings({ user }: { user: User }) {
       const updatedUser = await authApi.updateProfile(changedData);
       dispatch(updateUserProfile(updatedUser));
 
-      toast.success('Profile updated successfully!', { id: toastId });
+      toast.success("Profile updated successfully!", { id: toastId });
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error(error.response?.data?.message || 'Profile update failed', { id: toastId });
+      toast.error(error.response?.data?.message || "Profile update failed", {
+        id: toastId,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -128,7 +157,9 @@ function GeneralSettings({ user }: { user: User }) {
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Avatar className="h-20 w-20 border">
                 <AvatarImage src={avatarPreview} alt={namePreview} />
-                <AvatarFallback className="text-2xl">{getInitials(namePreview)}</AvatarFallback>
+                <AvatarFallback className="text-2xl">
+                  {getInitials(namePreview)}
+                </AvatarFallback>
               </Avatar>
               <FormField
                 control={form.control}
@@ -137,7 +168,10 @@ function GeneralSettings({ user }: { user: User }) {
                   <FormItem className="flex-1 w-full">
                     <FormLabel>Avatar URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://image-url.com/avatar.png" {...field} />
+                      <Input
+                        placeholder="https://image-url.com/avatar.png"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,7 +185,12 @@ function GeneralSettings({ user }: { user: User }) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input readOnly disabled value={user.email} className="bg-gray-100 cursor-not-allowed" />
+                    <Input
+                      readOnly
+                      disabled
+                      value={user.email}
+                      className="bg-gray-100 cursor-not-allowed"
+                    />
                   </FormControl>
                   {/* <FormDescription>Email poriborton kora jabe na.</FormDescription> */}
                 </FormItem>
@@ -163,7 +202,12 @@ function GeneralSettings({ user }: { user: User }) {
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input readOnly disabled value={user.phone} className="bg-gray-100 cursor-not-allowed" />
+                    <Input
+                      readOnly
+                      disabled
+                      value={user.phone}
+                      className="bg-gray-100 cursor-not-allowed"
+                    />
                   </FormControl>
                   {/* <FormDescription>Phone Number poriborton kora jabe na.</FormDescription> */}
                 </FormItem>
@@ -183,11 +227,12 @@ function GeneralSettings({ user }: { user: User }) {
                 </FormItem>
               )}
             />
-
           </CardContent>
           <CardFooter className="border-t pt-6 mt-10">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Save Changes
             </Button>
           </CardFooter>
@@ -206,15 +251,15 @@ function SecuritySettings() {
   const form = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
   const onSubmit = async (data: ChangePasswordFormData) => {
     setIsSubmitting(true);
-    const toastId = toast.loading('Changing password...');
+    const toastId = toast.loading("Changing password...");
 
     try {
       const response = await authApi.changePassword({
@@ -226,7 +271,10 @@ function SecuritySettings() {
       form.reset(); // Form reset
     } catch (error: any) {
       console.error("Change password error:", error);
-      toast.error(error.response?.data?.message || 'Failed to change password', { id: toastId });
+      toast.error(
+        error.response?.data?.message || "Failed to change password",
+        { id: toastId }
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -283,7 +331,9 @@ function SecuritySettings() {
           </CardContent>
           <CardFooter className="border-t pt-6">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Change Password
             </Button>
           </CardFooter>
@@ -303,19 +353,22 @@ function DangerZone() {
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
-    const toastId = toast.loading('Deleting account...');
+    const toastId = toast.loading("Deleting account...");
     try {
       await authApi.deleteAccount();
-      toast.success('Account deleted successfully. Redirecting...', { id: toastId });
+      toast.success("Account deleted successfully. Redirecting...", {
+        id: toastId,
+      });
 
       // Delay dispatch and redirect to allow toast to be seen
       setTimeout(() => {
-        dispatch(setLogout()); // Redux theke logout
-        router.push('/'); // Home page a redirect
+        dispatch(logout()); // Redux theke logout
+        router.push("/"); // Home page a redirect
       }, 1500);
-
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete account', { id: toastId });
+      toast.error(error.response?.data?.message || "Failed to delete account", {
+        id: toastId,
+      });
       setIsDeleting(false);
     }
   };
@@ -324,19 +377,29 @@ function DangerZone() {
     <Card className="border-destructive">
       <CardHeader>
         <CardTitle className="text-destructive">Danger Zone</CardTitle>
-        <CardDescription>Ei action-gulo irreversible (fera-no jabe na).</CardDescription>
+        <CardDescription>
+          Ei action-gulo irreversible (fera-no jabe na).
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             <p className="font-medium">Delete Your Account</p>
-            <p className="text-sm text-gray-600">Apnar account ebong somosto data sthayi-vabe muche fela hobe.</p>
+            <p className="text-sm text-gray-600">
+              Apnar account ebong somosto data sthayi-vabe muche fela hobe.
+            </p>
           </div>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={isDeleting} className="w-full sm:w-auto">
-                {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button
+                variant="destructive"
+                disabled={isDeleting}
+                className="w-full sm:w-auto"
+              >
+                {isDeleting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Delete Account
               </Button>
             </AlertDialogTrigger>
@@ -344,13 +407,15 @@ function DangerZone() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Apni ki nishchit?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Ei action-ti porobortite r bodlano jabe na. Eti apnar account ebong
-                  somosto related data (properties, favorites, messages) sthayi-vabe
-                  muche felbe.
+                  Ei action-ti porobortite r bodlano jabe na. Eti apnar account
+                  ebong somosto related data (properties, favorites, messages)
+                  sthayi-vabe muche felbe.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel disabled={isDeleting}>
+                  Cancel
+                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDeleteAccount}
                   className="bg-destructive hover:bg-destructive/90"
@@ -361,13 +426,11 @@ function DangerZone() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
         </div>
       </CardContent>
     </Card>
   );
 }
-
 
 // -----------------------------------------------------------------
 // MAIN COMPONENT: Profile Page
@@ -393,9 +456,15 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Account Settings
+            </h1>
             <p className="text-gray-600">
-              Apnar account settings manage korun (Role: <span className="font-semibold capitalize text-primary">{user.role}</span>)
+              Apnar account settings manage korun (Role:{" "}
+              <span className="font-semibold capitalize text-primary">
+                {user.role}
+              </span>
+              )
             </p>
           </div>
 
@@ -408,7 +477,10 @@ export default function ProfilePage() {
               <TabsTrigger value="security">
                 <Shield className="mr-2 h-4 w-4" /> Security
               </TabsTrigger>
-              <TabsTrigger value="danger" className="text-destructive data-[state=active]:border-b-destructive data-[state=active]:text-destructive">
+              <TabsTrigger
+                value="danger"
+                className="text-destructive data-[state=active]:border-b-destructive data-[state=active]:text-destructive"
+              >
                 <AlertTriangle className="mr-2 h-4 w-4" /> Danger Zone
               </TabsTrigger>
             </TabsList>
@@ -428,11 +500,8 @@ export default function ProfilePage() {
               <DangerZone />
             </TabsContent>
           </Tabs>
-
         </div>
       </div>
     </ProtectedRoute>
   );
 }
-
-
